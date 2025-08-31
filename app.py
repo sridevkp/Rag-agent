@@ -1,7 +1,7 @@
 import streamlit as st
 from pathlib import Path
-from chat import llm
-from ingest import add_pdf
+from src.chat import llm
+from src.ingest import add_pdf
 
 
 # Init session state
