@@ -7,7 +7,6 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 
 
-# embeddings = CohereEmbeddings(model="embed-english-v3.0", cohere_api_key="YOUR_KEY")
 @st.cache_resource
 def get_embedding():
     return HuggingFaceEmbeddings(model_name="all-MiniLM-L12-v2")
@@ -29,17 +28,6 @@ def add_pdf(file):
     vs = get_vectorstore()
     vs.add_documents(docs)
     return vs
-
-
-# @st.cache_resource
-# def create_index_from_file(file_name):
-#     loaders = [PyPDFLoader(file_name)]
-#     index = VectorstoreIndexCreator(
-#         embedding=embedding,
-#         text_splitter=RecursiveCharacterTextSplitter(chunk_size=100, chunk_overlap=0)
-#     ).from_loaders(loaders)
-
-#     return index
 
 if __name__ == "__main__":
     print("ingest")
