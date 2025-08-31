@@ -1,7 +1,7 @@
 import streamlit as st
 from pathlib import Path
-from chat import get_llm
-from ingest import add_file, create_index_from_file
+from src.chat import get_llm
+from src.ingest import add_file, create_index_from_file
 
 
 st.title("RAG assistant")
@@ -85,18 +85,15 @@ if st.session_state.index is not None:
     prompt = st.chat_input("How can I help you today?")
 
     if prompt:
-        # Add user message to session state
+        st.chat_message("user").markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
         
-        # Show thinking indicator and get response
         with st.chat_message("assistant"):
             with st.spinner("🤔 Thinking..."):
                 response = llm(prompt)
         
-        # Add assistant response to session state
         st.session_state.messages.append({"role": "assistant", "content": response})
         
-        # Rerun to show updated conversation
         st.rerun()
 else:
     st.info("⬆️ Upload PDF/TXT files to create an index and start chatting.")
