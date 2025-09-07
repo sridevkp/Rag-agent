@@ -1,10 +1,11 @@
 import streamlit as st
 from pathlib import Path
+
 from src.chat import get_llm
 from src.ingest import add_file, create_index_from_file
 
-
 st.title("RAG assistant")
+
 
 # Init session state
 if "messages" not in st.session_state:
@@ -44,6 +45,7 @@ with col1:
 with col2:
     if st.session_state.uploaded_files:
         st.markdown("#### 📂 Your Resources")
+
         size = 4
         file_cols = st.columns(max(4, len(st.session_state.uploaded_files[:size])))
 
@@ -97,3 +99,4 @@ if st.session_state.index is not None:
         st.rerun()
 else:
     st.info("⬆️ Upload PDF/TXT files to create an index and start chatting.")
+
