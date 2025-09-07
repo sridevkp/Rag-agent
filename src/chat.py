@@ -1,6 +1,7 @@
 from langchain.chains import RetrievalQA
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
+import os
 
 load_dotenv() 
 
@@ -9,7 +10,7 @@ def get_llm(index):
     retriever = index.vectorstore.as_retriever(search_kwargs={"k": 4})
 
     qa = RetrievalQA.from_chain_type(
-        llm=ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0),
+        llm=ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0,google_api_key=os.getenv("GOOGLE_API_KEY")),
         retriever=retriever,
         chain_type="map_reduce" ,
         return_source_documents=True

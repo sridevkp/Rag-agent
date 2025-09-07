@@ -77,3 +77,4 @@ dmypy.json
 *.log
 
 chroma_db
+demo
