@@ -1,20 +1,25 @@
 import streamlit as st
 from pathlib import Path
-from src.chat import llm
-from src.ingest import add_pdf
+
+from src.chat import get_llm
+from src.ingest import add_file, create_index_from_file
+
+st.title("RAG assistant")
 
 
 # Init session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-class File:
-    name = "file nam is too large to fill the the the "
-
 if "uploaded_files" not in st.session_state:
     st.session_state.uploaded_files = []
 
-st.title("Chat Bot Template")
+if "index" not in st.session_state:
+    st.session_state.index = None
+
+if "processed_files" not in st.session_state:
+    st.session_state.processed_files = set()
+
 
 # === File Upload Section ===
 st.subheader("Resources")
@@ -26,14 +31,21 @@ with col1:
         "Upload your docs and other resources"
     )
     if uploaded:
-        f = uploaded# for f in uploaded:
-        if f.name not in [uf.name for uf in st.session_state.uploaded_files]:
-            add_pdf(f)
-            st.session_state.uploaded_files.append(f)
+        file = uploaded
+        if file.name not in st.session_state.processed_files:
+            with st.spinner(f"🔎 Indexing {file.name} and generating embeddings..."):
+                if st.session_state.index is None:
+                    st.session_state.index = create_index_from_file(file)
+                else:
+                    add_file(st.session_state.index, file)
+
+            st.session_state.uploaded_files.append(file)
+            st.session_state.processed_files.add(file.name) 
 
 with col2:
     if st.session_state.uploaded_files:
-        st.markdown("#### 📂 Uploaded Files")
+        st.markdown("#### 📂 Your Resources")
+
         size = 4
         file_cols = st.columns(max(4, len(st.session_state.uploaded_files[:size])))
 
@@ -66,14 +78,25 @@ with col2:
 # === Chat Section ===
 st.subheader("Chat")
 
-for message in st.session_state.messages:
-    st.chat_message(message['role']).markdown(message['content'])
+if st.session_state.index is not None:
+    llm = get_llm(st.session_state.index)
 
-prompt = st.chat_input("How can I help you today?")
+    for message in st.session_state.messages:
+        st.chat_message(message['role']).markdown(message['content'])
 
-if prompt:
-    st.chat_message("user").markdown(prompt)
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    response = llm(prompt)
-    st.chat_message('agent').markdown(response)
-    st.session_state.messages.append({"role": "assistant", "content": response})
+    prompt = st.chat_input("How can I help you today?")
+
+    if prompt:
+        st.chat_message("user").markdown(prompt)
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        with st.chat_message("assistant"):
+            with st.spinner("🤔 Thinking..."):
+                response = llm(prompt)
+        
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        
+        st.rerun()
+else:
+    st.info("⬆️ Upload PDF/TXT files to create an index and start chatting.")
+
